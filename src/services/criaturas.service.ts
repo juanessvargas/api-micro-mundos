@@ -1,24 +1,57 @@
 import { criaturas } from "../data/criaturas";
-import { ActualizarCriatura, Criatura, NuevaCriatura } from "../tipos";
+import {
+  ActualizarCriatura,
+  Criatura,
+  Emocion,
+  NuevaCriatura
+} from "../tipos";
+import { ApiError } from "../apiError";
 
-export function listarCriaturas(): Criatura[] {
-  return criaturas;
+let siguienteId = criaturas.length + 1;
+
+export function listarCriaturas(emocion?: Emocion): Criatura[] {
+  if (!emocion) return criaturas;
+
+  return criaturas.filter(
+    (criatura) => criatura.emocion === emocion
+  );
 }
 
-export function obtenerCriaturaPorId(id: number): Criatura | undefined {
-  return criaturas.find((criatura) => criatura.id === id);
+export function obtenerCriaturaPorId(id: number): Criatura {
+  const criatura = criaturas.find(
+    (criatura) => criatura.id === id
+  );
+
+  if (!criatura) {
+    throw new ApiError(
+      404,
+      `Criatura con id ${id} no encontrada`
+    );
+  }
+
+  return criatura;
 }
 
 export function crearCriatura(datos: NuevaCriatura): Criatura {
-  const nuevoId =
-    criaturas.length > 0
-      ? Math.max(...criaturas.map((criatura) => criatura.id)) + 1
-      : 1;
+  if (
+    !datos.nombre ||
+    !datos.emocion ||
+    !datos.descripcion ||
+    !datos.habitat ||
+    !datos.estado
+  ) {
+    throw new ApiError(
+      400,
+      "nombre, emocion, descripcion, habitat y estado son obligatorios"
+    );
+  }
 
   const nuevaCriatura: Criatura = {
-    id: nuevoId,
+    id: siguienteId,
     ...datos
   };
+
+  siguienteId += 1;
 
   criaturas.push(nuevaCriatura);
 
@@ -27,27 +60,36 @@ export function crearCriatura(datos: NuevaCriatura): Criatura {
 
 export function actualizarCriatura(
   id: number,
-  datos: ActualizarCriatura
-): Criatura | undefined {
-  const criatura = criaturas.find((criatura) => criatura.id === id);
+  cambios: ActualizarCriatura
+): Criatura {
+  const criatura = obtenerCriaturaPorId(id);
 
-  if (!criatura) {
-    return undefined;
-  }
+  const actualizada: Criatura = {
+    ...criatura,
+    ...cambios,
+    id: criatura.id
+  };
 
-  Object.assign(criatura, datos);
+  const indice = criaturas.findIndex(
+    (criatura) => criatura.id === id
+  );
 
-  return criatura;
+  criaturas[indice] = actualizada;
+
+  return actualizada;
 }
 
-export function eliminarCriatura(id: number): boolean {
-  const indice = criaturas.findIndex((criatura) => criatura.id === id);
+export function eliminarCriatura(id: number): void {
+  const indice = criaturas.findIndex(
+    (criatura) => criatura.id === id
+  );
 
   if (indice === -1) {
-    return false;
+    throw new ApiError(
+      404,
+      `Criatura con id ${id} no encontrada`
+    );
   }
 
   criaturas.splice(indice, 1);
-
-  return true;
 }
