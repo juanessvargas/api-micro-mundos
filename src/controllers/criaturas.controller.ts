@@ -75,6 +75,13 @@ export function actualizar(
   try {
     const id = Number(req.params.id);
 
+    if (Number.isNaN(id)) {
+      throw new ApiError(
+        400,
+        `"${req.params.id}" no es un id válido`
+      );
+    }
+
     const actualizada =
       criaturasService.actualizarCriatura(id, req.body);
 
@@ -94,6 +101,13 @@ export function eliminar(
 ): void {
   try {
     const id = Number(req.params.id);
+
+    if (Number.isNaN(id)) {
+      throw new ApiError(
+        400,
+        `"${req.params.id}" no es un id válido`
+      );
+    }
 
     criaturasService.eliminarCriatura(id);
 

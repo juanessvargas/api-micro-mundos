@@ -3,6 +3,7 @@ import {
   ActualizarCriatura,
   Criatura,
   Emocion,
+  EstadoCriatura,
   NuevaCriatura
 } from "../tipos";
 import { ApiError } from "../apiError";
@@ -37,12 +38,52 @@ export function crearCriatura(datos: NuevaCriatura): Criatura {
     !datos.nombre ||
     !datos.emocion ||
     !datos.descripcion ||
+    datos.nivelIntensidad === undefined ||
     !datos.habitat ||
     !datos.estado
   ) {
     throw new ApiError(
       400,
-      "nombre, emocion, descripcion, habitat y estado son obligatorios"
+      "nombre, emocion, descripcion, nivelIntensidad, habitat y estado son obligatorios"
+    );
+  }
+
+  const emocionesValidas: Emocion[] = [
+    "alegria",
+    "tristeza",
+    "miedo",
+    "ira",
+    "calma"
+  ];
+
+  if (!emocionesValidas.includes(datos.emocion)) {
+    throw new ApiError(
+      400,
+      "Emocion no valida"
+    );
+  }
+
+  const estadosValidos: EstadoCriatura[] = [
+    "activa",
+    "dormida",
+    "oculta"
+  ];
+
+  if (!estadosValidos.includes(datos.estado)) {
+    throw new ApiError(
+      400,
+      "Estado de criatura no valido"
+    );
+  }
+
+  if (
+    typeof datos.nivelIntensidad !== "number" ||
+    datos.nivelIntensidad < 1 ||
+    datos.nivelIntensidad > 10
+  ) {
+    throw new ApiError(
+      400,
+      "nivelIntensidad debe ser un numero entre 1 y 10"
     );
   }
 
